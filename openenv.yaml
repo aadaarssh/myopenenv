@@ -1,0 +1,8 @@
+version: 1.0.0
+name: Smart Grocery Price Optimization Agent
+description: An RL environment where the agent acts as a farmer optimizing profits by moving crops across multiple markets while managing spoilage, storage costs, and transportation logistics.
+entrypoint: apmc.env:APMCEnv
+tasks:
+  - easy_arbitrage
+  - medium_temporal
+  - hard_logistics
