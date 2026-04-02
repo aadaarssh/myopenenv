@@ -6,9 +6,10 @@ from apmc.env import APMCEnv
 from apmc.tasks import TASKS
 from apmc.models import Action
 
-API_BASE_URL = os.environ.get("API_BASE_URL", "https://api.openai.com/v1")
-API_KEY = os.environ.get("HF_TOKEN", os.environ.get("OPENAI_API_KEY", ""))
-MODEL_NAME = os.environ.get("MODEL_NAME", "gpt-4o-mini")
+# Pre-Submission Checklist explicitly requires exact os.getenv setup for these three variables
+API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 SYSTEM_PROMPT = """You are a smart agricultural supply chain agent.
 Your objective is to maximize profit by deciding where and when to sell crops.
@@ -34,11 +35,11 @@ def extract_action(response_text: str) -> dict:
             return json.loads(match.group(0))
         return json.loads(response_text)
     except Exception as e:
-        print("Failed to parse action JSON:", response_text)
         return {"reasoning": "Fallback", "action_type": "wait", "days": 1}
 
 def run_task(task_name: str, client: OpenAI) -> float:
-    print(f"\n========== RUNNING TASK: {task_name} ==========")
+    # Must follow exact (START/STEP/END) formatting rule
+    print(f"START {task_name}")
     env = APMCEnv(task_name=task_name)
     obs = env.reset()
     done = False
@@ -46,10 +47,8 @@ def run_task(task_name: str, client: OpenAI) -> float:
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
     for step in range(30): 
+        print(f"STEP {step+1}")
         obs_json = obs.model_dump_json(indent=2)
-        print(f"\n--- STEP {step+1} ---")
-        print("Observation:")
-        print(obs_json)
         
         messages.append({"role": "user", "content": f"Observation:\n{obs_json}\nWhat is your next action JSON?"})
         
@@ -60,9 +59,9 @@ def run_task(task_name: str, client: OpenAI) -> float:
                 temperature=0.0
             )
             reply = response.choices[0].message.content or ""
-            print("\nAgent Reply:", reply)
         except Exception as e:
             print("OpenAI API Error:", e)
+            print(f"END {task_name} 0.0")
             return 0.0
 
         messages.append({"role": "assistant", "content": reply})
@@ -70,39 +69,29 @@ def run_task(task_name: str, client: OpenAI) -> float:
         action_dict = extract_action(reply)
         try:
             action = Action(**action_dict)
-            print(f"Reasoning: {action.reasoning}")
         except Exception as e:
-            print("Invalid Action structure:", e)
             action = Action(reasoning="Recovery from error", action_type="wait", days=1)
             
-        print(f"Executed: {action.action_type}")
         obs, reward, done, info = env.step(action)
-        print(f"Immediate Normalized Reward: {reward.value}")
         
         if done:
-            print(f"\n[!] Episode Completed. Task: {task_name}")
-            print(f"[+] Final Grade: {info.grade}")
-            print(f"[+] Final Metrics: {info.metrics}")
+            print(f"END {task_name} {info.grade}")
             return info.grade
             
-    print("\n[!] Error: Exceeded max steps.")
+    print(f"END {task_name} 0.0")
     return 0.0
 
 def main():
-    if not API_KEY:
+    api_key = HF_TOKEN or os.getenv("OPENAI_API_KEY")
+    if not api_key:
         print("WARNING: HF_TOKEN or OPENAI_API_KEY environment variable not set. LLM calls will fail.")
-
-    client = OpenAI(base_url=API_BASE_URL, api_key=API_KEY)
+        
+    client = OpenAI(base_url=API_BASE_URL, api_key=api_key)
     
     scores = {}
     for task_name in TASKS.keys():
         score = run_task(task_name, client)
         scores[task_name] = score
-        print("\n" + "="*50)
-        
-    print("\n========== FINAL RESULTS ==========")
-    for k, v in scores.items():
-        print(f"{k}: {v:.3f}")
 
 if __name__ == "__main__":
     main()

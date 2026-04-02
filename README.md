@@ -1,3 +1,14 @@
+---
+title: Smart Grocery APMC Logistics
+emoji: 🚜
+colorFrom: green
+colorTo: yellow
+sdk: docker
+pinned: false
+tags:
+  - openenv
+---
+
 # 🌾🚜 Smart Grocery Price Optimization & APMC Logistics (OpenEnv)
 
 ![OpenEnv Compatible](https://img.shields.io/badge/OpenEnv-Compatible-brightgreen)
