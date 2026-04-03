@@ -20,4 +20,4 @@ ENV PYTHONUNBUFFERED=1
 EXPOSE 7860
 
 # The command to run the FastAPI server on HF spaces
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "7860"]
