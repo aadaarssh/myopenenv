@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "apmc_env"
+version = "0.1.0"
+description = "Smart Grocery Price Optimization & APMC Logistics (OpenEnv)"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv>=0.1.0",
+    "pydantic>=2.0.0",
+    "openai>=1.0.0",
+    "fastapi",
+    "uvicorn[standard]"
+]
