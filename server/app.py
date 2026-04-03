@@ -41,3 +41,7 @@ def get_state():
     if not env_instance:
         raise HTTPException(status_code=400, detail="Must call /reset first")
     return {"state": env_instance.state()}
+
+def start():
+    import uvicorn
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
