@@ -39,7 +39,7 @@ def extract_action(response_text: str) -> dict:
 
 def run_task(task_name: str, client: OpenAI) -> float:
     # Must follow exact (START/STEP/END) formatting rule
-    print(f"START {task_name}")
+    print(f"[START] task={task_name}", flush=True)
     env = APMCEnv(task_name=task_name)
     obs = env.reset()
     done = False
@@ -47,7 +47,6 @@ def run_task(task_name: str, client: OpenAI) -> float:
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     
     for step in range(30): 
-        print(f"STEP {step+1}")
         obs_json = obs.model_dump_json(indent=2)
         
         messages.append({"role": "user", "content": f"Observation:\n{obs_json}\nWhat is your next action JSON?"})
@@ -61,7 +60,7 @@ def run_task(task_name: str, client: OpenAI) -> float:
             reply = response.choices[0].message.content or ""
         except Exception as e:
             print("OpenAI API Error:", e)
-            print(f"END {task_name} 0.0")
+            print(f"[END] task={task_name} score=0.0 steps={step}", flush=True)
             return 0.0
 
         messages.append({"role": "assistant", "content": reply})
@@ -73,12 +72,13 @@ def run_task(task_name: str, client: OpenAI) -> float:
             action = Action(reasoning="Recovery from error", action_type="wait", days=1)
             
         obs, reward, done, info = env.step(action)
+        print(f"[STEP] step={step+1} reward={reward}", flush=True)
         
         if done:
-            print(f"END {task_name} {info.grade}")
+            print(f"[END] task={task_name} score={info.grade} steps={step+1}", flush=True)
             return info.grade
             
-    print(f"END {task_name} 0.0")
+    print(f"[END] task={task_name} score=0.0 steps=30", flush=True)
     return 0.0
 
 def main():
