@@ -48,7 +48,7 @@ class APMCEnv:
         efficiency = profit / max(1.0, self.theoretical_max)
         penalty_factor = min(1.0, self.simulator.state.current_day / max(1, self.simulator.state.max_days))
         # Reduce score linearly up to 10% based on how many days it took
-        grade = max(0.0, min(1.0, efficiency * (1.0 - 0.1 * penalty_factor)))
+        grade = max(0.01, min(0.99, efficiency * (1.0 - 0.1 * penalty_factor)))
         
         inventory_waste = self.simulator.state.current_inventory + sum(s.quantity for s in self.simulator.state.in_transit) + sum(v for v in self.simulator.state.inventory_at_markets.values())
 

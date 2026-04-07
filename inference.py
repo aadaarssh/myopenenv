@@ -60,8 +60,8 @@ def run_task(task_name: str, client: OpenAI) -> float:
             reply = response.choices[0].message.content or ""
         except Exception as e:
             print("OpenAI API Error:", e)
-            print(f"[END] task={task_name} score=0.0 steps={step}", flush=True)
-            return 0.0
+            print(f"[END] task={task_name} score=0.01 steps={step}", flush=True)
+            return 0.01
 
         messages.append({"role": "assistant", "content": reply})
         
@@ -78,8 +78,8 @@ def run_task(task_name: str, client: OpenAI) -> float:
             print(f"[END] task={task_name} score={info.grade} steps={step+1}", flush=True)
             return info.grade
             
-    print(f"[END] task={task_name} score=0.0 steps=30", flush=True)
-    return 0.0
+    print(f"[END] task={task_name} score=0.01 steps=30", flush=True)
+    return 0.01
 
 def main():
     api_key = HF_TOKEN or os.getenv("OPENAI_API_KEY")
